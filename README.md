@@ -48,29 +48,65 @@ let html = @embed.read_file(dir, "/index.html")
 
 ## 这是什么
 
-把前端构建产物直接编译进 MoonBit 二进制。类似 Go 的 `//go:embed`。
+把前端构建产物（或任意静态文件）直接编译进 MoonBit 二进制。类似 Go 的 `//go:embed`。
 
-### 为什么需要它
+### 常见误解
 
-- **单二进制部署**：一个文件包含全部页面，不需要 Nginx
-- **零运行时依赖**：解码后直接提供 `Bytes`
-- **跨平台生成**：生成器本身是 MoonBit 程序，Windows / macOS / Linux 都能跑
+> "那编译产物不还是两个文件吗？一个 .exe 还得带着一个 embedded.mbt？"
+
+**不是。** `embedded.mbt` 在 `moon build` 阶段就被编译进二进制了，不是运行时加载的。
+
+```
+make build
+  → pnpm build
+  → moon run gen -- ./frontend/dist   ← 生成 src/embedded.mbt
+  → moon build                        ← 编译进 .exe
+  → 一个 .exe 文件                       ← 这就是全部
+```
+
+这个 `.exe` 拿到任何机器直接跑，不需要带着 `embedded.mbt`。
+
+### 和纯 Bytes 字面量方案的区别
+
+社区已有的 [tonyfettes/moon-embed](https://mooncakes.io/docs/tonyfettes/moon-embed@0.0.1) 走的是另一条路：每个文件生成一个单独的 `let` / `const` 绑定，文本用 `#|` 多行字符串，二进制用 `Bytes` 十六进制字面量。
+
+| | 纯 Bytes 字面量 | 本方案（base64 + 运行时解码） |
+|---|---|---|
+| 源码可读性 | 小文件好，大文件几千行 `0xFF` | 统一 base64 字符串 |
+| 编译速度 | 大文件 Bytes 字面量拖慢编译器 | base64 字符串编译快 |
+| 运行时性能 | 零解码 | 启动时一次 decode |
+| 目录支持 | 手动，每个文件跑一次 | 一次扫描整个目录 |
+| 运行时库 | 无 | `decode_all` / `content_type` / `extract_all` |
+
+大文件（JS/CSS）用 Bytes 字面量会导致生成的 `.mbt` 文件膨胀、编译变慢。本方案用 base64 更适合**前端静态文件批量嵌入**的场景。
 
 ---
 
-## 实现原理
+## 用法
+
+### 作为库
+
+```bash
+moon add moonbitlang/x
+moon add moonbitlang/async
+moon add your-name/moon-embed
+```
 
 ```moonbit
-构建时:
-  moon run gen -- ./dist
-  ↓
-  src/embedded.mbt 包含两个 pub 数组
-  (路径列表 + base64 编码的文件内容)
+let files = @embed.decode_all(EMBED_PATHS, EMBED_DATA)
+let html  = files["/index.html"]
+```
 
-运行时:
-  decode_all  → Map[String, Bytes]  全部解码到内存
-  extract_all → /tmp/xxx/           解压到临时目录
-  content_type → "text/html"        猜测 MIME
+### 生成嵌入文件
+
+```bash
+moon run gen -- ./frontend/dist
+```
+
+输出默认到 `src/embedded.mbt`，可自定义：
+
+```bash
+moon run gen -- ./frontend/dist -o path/to/embedded.mbt
 ```
 
 ## API
@@ -82,3 +118,12 @@ let html = @embed.read_file(dir, "/index.html")
 | `read_file(dir, path)` | 从解压目录读取文件 |
 | `content_type(path)` | 根据扩展名猜测 Content-Type |
 | `ensure_embedded(paths)` | 检查嵌入数据是否为空 |
+
+## 发布到 mooncakes
+
+```bash
+moon login        # 登录 mooncakes 账号
+moon publish      # 发布（包名为 your-name/moon-embed）
+```
+
+包名以你的 mooncakes 用户名开头，不会和任何人冲突。
