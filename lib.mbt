@@ -71,6 +71,9 @@ pub fn content_type(path : String) -> String {
     if end == ".png"  { return "image/png" }
     if end == ".ico"  { return "image/x-icon" }
     if end == ".txt"  { return "text/plain; charset=utf-8" }
+  }
+  if len >= 5 {
+    let end = path[len - 5:]
     if end == ".wasm" { return "application/wasm" }
   }
   if len >= 3 {
@@ -85,19 +88,18 @@ pub fn content_type(path : String) -> String {
   "application/octet-stream"
 }
 
-/// 检查嵌入数据是否为空，为空则 panic（可以用在 main 入口）
+/// 检查嵌入数据是否为空
 ///
 /// 编译时：如果用户没生成 embedded.mbt，编译器会报
 ///   `The value identifier EMBED_PATHS is unbound.`
 /// 这已经是接近编译期检查的效果。
 ///
-/// 运行时：如果生成的文件为空数组，此函数会明确提示。
-pub fn ensure_embedded(paths : Array[String]) -> Unit {
+/// 运行时：如果生成的文件为空数组，返回 Err 提示。
+pub fn ensure_embedded(paths : Array[String]) -> Result[Unit, String] {
   if paths.is_empty() {
-    panic(
-      "moon-embed: EMBED_PATHS is empty.\n" +
-      "  Run: bash scripts/gen.sh <dist-dir> > src/embedded.mbt"
-    )
+    Err("moon-embed: EMBED_PATHS is empty.\n  Run: bash scripts/gen.sh <dist-dir> > src/embedded.mbt")
+  } else {
+    Ok(())
   }
 }
 
