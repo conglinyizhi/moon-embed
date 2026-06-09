@@ -85,6 +85,22 @@ pub fn content_type(path : String) -> String {
   "application/octet-stream"
 }
 
+/// 检查嵌入数据是否为空，为空则 panic（可以用在 main 入口）
+///
+/// 编译时：如果用户没生成 embedded.mbt，编译器会报
+///   `The value identifier EMBED_PATHS is unbound.`
+/// 这已经是接近编译期检查的效果。
+///
+/// 运行时：如果生成的文件为空数组，此函数会明确提示。
+pub fn ensure_embedded(paths : Array[String]) -> Unit {
+  if paths.is_empty() {
+    panic(
+      "moon-embed: EMBED_PATHS is empty.\n" +
+      "  Run: bash scripts/gen.sh <dist-dir> > src/embedded.mbt"
+    )
+  }
+}
+
 /// 获取路径的父目录
 fn dirname(p : String) -> String {
   match p.rev_find("/") {
