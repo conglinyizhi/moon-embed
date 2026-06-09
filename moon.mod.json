@@ -6,7 +6,7 @@
     "moonbitlang/async": "0.19.2",
     "moonbitlang/x": "0.4.45"
   },
-  "license": "Apache-2.0",
+  "license": "MIT",
   "repository": "",
   "description": "Embed static files into MoonBit binaries"
 }
