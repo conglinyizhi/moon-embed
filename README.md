@@ -5,14 +5,15 @@
 ## 一分钟上手
 
 ```bash
-# 生成嵌入文件（默认输出到 src/embedded.mbt）
+# [推荐]生成嵌入文件（默认输出到 src/embedded.mbt）
 moon run gen -- ./frontend/dist
 
 # 或指定输出路径
 moon run gen -- ./frontend/dist -o my-embed.mbt
-
-# 在代码里使用
 ```
+
+### 在代码里使用
+
 ```moonbit
 let files = @embed.decode_all(EMBED_PATHS, EMBED_DATA)
 
@@ -30,10 +31,10 @@ match files.get(request.path) {
 
 ### 两种模式
 
-| 模式 | 函数 | 适用场景 |
-|------|------|---------|
-| 内存 | `decode_all()` | 小文件、性能敏感 |
-| 磁盘 | `extract_all()` + `read_file()` | 大文件、省内存 |
+| 模式 | 函数                            | 适用场景         |
+| ---- | ------------------------------- | ---------------- |
+| 内存 | `decode_all()`                  | 小文件、性能敏感 |
+| 磁盘 | `extract_all()` + `read_file()` | 大文件、省内存   |
 
 ```moonbit
 // 内存模式
@@ -70,13 +71,13 @@ make build
 
 社区已有的 [tonyfettes/moon-embed](https://mooncakes.io/docs/tonyfettes/moon-embed@0.0.1) 走的是另一条路：每个文件生成一个单独的 `let` / `const` 绑定，文本用 `#|` 多行字符串，二进制用 `Bytes` 十六进制字面量。
 
-| | 纯 Bytes 字面量 | 本方案（base64 + 运行时解码） |
-|---|---|---|
-| 源码可读性 | 小文件好，大文件几千行 `0xFF` | 统一 base64 字符串 |
-| 编译速度 | 大文件 Bytes 字面量拖慢编译器 | base64 字符串编译快 |
-| 运行时性能 | 零解码 | 启动时一次 decode |
-| 目录支持 | 手动，每个文件跑一次 | 一次扫描整个目录 |
-| 运行时库 | 无 | `decode_all` / `content_type` / `extract_all` |
+|            | 纯 Bytes 字面量               | 本方案（base64 + 运行时解码）                 |
+| ---------- | ----------------------------- | --------------------------------------------- |
+| 源码可读性 | 小文件好，大文件几千行 `0xFF` | 统一 base64 字符串                            |
+| 编译速度   | 大文件 Bytes 字面量拖慢编译器 | base64 字符串编译快                           |
+| 运行时性能 | 零解码                        | 启动时一次 decode                             |
+| 目录支持   | 手动，每个文件跑一次          | 一次扫描整个目录                              |
+| 运行时库   | 无                            | `decode_all` / `content_type` / `extract_all` |
 
 大文件（JS/CSS）用 Bytes 字面量会导致生成的 `.mbt` 文件膨胀、编译变慢。本方案用 base64 更适合**前端静态文件批量嵌入**的场景。
 
@@ -111,13 +112,13 @@ moon run gen -- ./frontend/dist -o path/to/embedded.mbt
 
 ## API
 
-| 函数 | 说明 |
-|------|------|
-| `decode_all(paths, data)` | base64 解码全部文件，返回 `Map[String, Bytes]` |
-| `extract_all(paths, data)` | 解压到临时目录，返回目录路径 |
-| `read_file(dir, path)` | 从解压目录读取文件 |
-| `content_type(path)` | 根据扩展名猜测 Content-Type |
-| `ensure_embedded(paths)` | 检查嵌入数据是否为空 |
+| 函数                       | 说明                                           |
+| -------------------------- | ---------------------------------------------- |
+| `decode_all(paths, data)`  | base64 解码全部文件，返回 `Map[String, Bytes]` |
+| `extract_all(paths, data)` | 解压到临时目录，返回目录路径                   |
+| `read_file(dir, path)`     | 从解压目录读取文件                             |
+| `content_type(path)`       | 根据扩展名猜测 Content-Type                    |
+| `ensure_embedded(paths)`   | 检查嵌入数据是否为空                           |
 
 ## 发布到 mooncakes
 
