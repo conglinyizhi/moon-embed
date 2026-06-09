@@ -1,0 +1,12 @@
+{
+  "name": "moon-embed",
+  "version": "0.1.0",
+  "preferred-target": "native",
+  "deps": {
+    "moonbitlang/async": "0.19.2",
+    "moonbitlang/x": "0.4.45"
+  },
+  "license": "Apache-2.0",
+  "repository": "",
+  "description": "Embed static files into MoonBit binaries"
+}
