@@ -8,5 +8,6 @@
   },
   "license": "MIT",
   "repository": "https://github.com/conglinyizhi/moon-embed",
+  "readme": "README.md",
   "description": "Embed static files into MoonBit binaries"
 }
