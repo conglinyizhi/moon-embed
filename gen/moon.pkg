@@ -1,0 +1,13 @@
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs" @fs,
+  "moonbitlang/async/stdio" @stdio,
+  "moonbitlang/core/env" @env,
+  "moonbitlang/x/codec/base64" @base64,
+}
+
+options(
+  "is-main": true,
+)
+
+supported_targets = "native"
