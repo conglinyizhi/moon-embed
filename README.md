@@ -5,8 +5,11 @@
 ## 一分钟上手
 
 ```bash
-# 生成嵌入文件
-moon run gen -- ./frontend/dist > src/embedded.mbt
+# 生成嵌入文件（默认输出到 src/embedded.mbt）
+moon run gen -- ./frontend/dist
+
+# 或指定输出路径
+moon run gen -- ./frontend/dist -o my-embed.mbt
 
 # 在代码里使用
 ```
@@ -59,9 +62,9 @@ let html = @embed.read_file(dir, "/index.html")
 
 ```moonbit
 构建时:
-  moon run gen -- ./dist > src/embedded.mbt
+  moon run gen -- ./dist
   ↓
-  embedded.mbt 包含两个 pub 数组
+  src/embedded.mbt 包含两个 pub 数组
   (路径列表 + base64 编码的文件内容)
 
 运行时:
